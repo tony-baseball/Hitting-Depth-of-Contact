@@ -1,15 +1,18 @@
 library(ggplot2)
 library(plyr)
 library(tidyverse)
+library(plotly)
 
-df <- read.csv('sample.csv') %>%
+df <- read.csv('sample csv.csv') %>%
   filter(PitchCall == 'InPlay',
          HitType != 'Bunt')
-
+df %>% select (PlateLocSide, yt_HitLocationX)
 # from Yakkertech Glossary - yt_HitLocation (X,Y,Z) - The point where contact was made, with (X,Z) being the plate location and Y being the "depth" (measured from the back tip of home plate)
 # Contact depth overhead using Yakkertech data. Trackman data will have differently named columns, but the same can be achieved.
 # Yakkertech measures in feet, so we multiply by 12 to get inches instead to get more granular
+# For the X axis of pitch / contact location, you can use yt_HitLocationX which is hitter POV. IF you use PlateLocSide, make sure you inverse it by doing -PlateLocSide since it is from the pitchers POV
 
+#ggplot(df, aes(-PlateLocSide * 12, yt_HitLocationY * 12, PitchNo, ExitSpeed, Angle, Bearing))+
 ggplot(df, aes(yt_HitLocationX * 12, yt_HitLocationY * 12, PitchNo, ExitSpeed, Angle, Bearing))+
   scale_x_continuous(limit= c(-10,10), breaks=seq(-10,10 ,1))+
   scale_y_continuous(limit= c(-3,51), breaks=seq(0,51 ,3)) +
@@ -93,6 +96,7 @@ ggplot(df, aes(yt_HitLocationY * 12, PlateLocHeight * 12 ))+
 # ----- plotly 3D tests
 # this is a test to make a 3D plot. I would just need to add a 3d strike zone
 
+#plot_ly(df, x = ~-PlateLocSide * 12, y = ~yt_HitLocationY * 12 , z = ~yt_HitLocationZ * 12, color = ~ExitSpeed) %>% 
 plot_ly(df, x = ~yt_HitLocationX * 12, y = ~yt_HitLocationY * 12 , z = ~yt_HitLocationZ * 12, color = ~ExitSpeed) %>% 
   add_markers() %>%
   layout(scene = list(xaxis = list(range = c(-20,20) , title = 'Horz Contact Point'),
